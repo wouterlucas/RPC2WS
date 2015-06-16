@@ -25,13 +25,11 @@ var app = express();
 app.set('port', (process.env.PORT || 5000));
 app.use(express.static(__dirname + '/public'));
 
-app.get('/', function(request, response) {
-  response.send('Hello World!');
-});
-
 // Forward AJAX RPC calls to the ajaxrpc module
 app.get('/:clientId/ajax', ajaxrpc.handleAjaxRpcRequest);
 
+// Start HTTP Server
 var server = http.createServer(app).listen(app.get('port'));
 
+// Start WebSocket Server (module)
 websocket.startWebSocketServer(server);

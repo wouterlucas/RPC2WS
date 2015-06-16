@@ -44,5 +44,6 @@ The RPC2WS uses node.js and consists out of two components:
 
 - The WebSocket listener, responsible for establishing WS requests and subscribing to REDIS channels for messages (websocket.js)
 
-This program is prepared to run in Heroku with Redis2Go
-There is a very simple test page in public/
+This program is prepared to run in Heroku with Redis2Go.
+
+There is a very simple test page in public/.

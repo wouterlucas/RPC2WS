@@ -41,11 +41,10 @@ redisListener.on('connect', function(err) {
     redisListener.subscribe('responseChannel');
 });
 
-/*
+
 redisListener.on('error', function(err) {
     console.log('ajaxrpc.js - Redis Error: ' + err);
 });
-*/
 
 //====== Handle responses on the response channel ==========
 redisListener.on('message', function(channel, message) {
