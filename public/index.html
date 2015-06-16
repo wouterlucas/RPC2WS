@@ -185,7 +185,7 @@
     
     function postMessage() {
         $.ajax({
-          url:'http://localhost:5000/' + $("textarea[name='clientid']").val() + '/ajax?' + $("#sent textarea[name='request']").val(),
+          url:rpcurl + '/' + $("textarea[name='clientid']").val() + '/ajax?' + $("#sent textarea[name='request']").val(),
           type:"GET",
           complete: function(xhr, status){
             console.log('Ajax message ' + status);
