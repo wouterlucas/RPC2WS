@@ -4,157 +4,191 @@
   <head>
     <title>RPC2WS</title>
  
-	<meta charset="utf-8" />
-	
-	<!-- by wouterlucas.com -->
+    <meta charset="utf-8" />
+    
+    <!-- by wouterlucas.com -->
     <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
   </head>
   <body>
  
- 	<section id="sent">
- 		<h1>Client Id:</h1>
- 		<form action="javascript:reconnect()">
- 			<textarea name="clientid" rows="1" cols="20">device1</textarea>
-			<input class="button" type='submit' value='Reconnect' />
-		</form> 
- 		<h1>AjaxRPC:</h1>
-		<form action="javascript:postMessage()">
-			<textarea name="request" rows="3" cols="60">{"jsonrpc": "2.0", "method": "foobar", "id" : 1}</textarea>
-			<input class="button" type='submit' value='Send' />
-			<span id="sendstatus"></span>
-		</form>
-		<h2>Ajax response received:
-	 		<form action="javascript:clear()">
-				<input class="button" type='submit' value='Clear' />
-			</form>
-		</h2>
-		
-		<div id='ajax'></div>
+    <section id="host">
+        <h1>Info</h1>
+        <form action="javascript:reconnectWs()">
+            Ajax RPC host url:  <textarea name="rpcurl" rows="1" cols="20"></textarea><br>
+            Websocket host url: <textarea name="wsurl" rows="1" cols="20"></textarea><br>
+            Clientid: <textarea name="clientid" rows="1" cols="20">device1</textarea>
+            <input class="button" type="submit" value="Reconnect Ws" />
+        </form>
+        <br>
+        <form action="javascript:reconnect()">
+            Save params as url parameters and reload: <input class="button" type="submit" value="Reload" />
+        </form>         
+    </section>
 
- 	</section>
+    <section id="sent">
+        <h1>AjaxRPC:</h1>
+        <form action="javascript:postMessage()">
+            <textarea name="request" rows="3" cols="60">{"jsonrpc": "2.0", "method": "foobar", "id" : 1}</textarea>
+            <input class="button" type='submit' value='Send' />
+            <span id="sendstatus"></span>
+        </form>
+        <h2>Ajax response received:
+            <form action="javascript:clear()">
+                <input class="button" type='submit' value='Clear' />
+            </form>
+        </h2>
+        
+        <div id='ajax'></div>
+
+    </section>
  
- 	<section id="client">
- 		<h1>WebSocket:</h1>
- 		<p>Connection status: <span id="connectionStatus">Disconnected</span></p>		
-		<br>
- 		<form action="javascript:sendWs()">
-			<textarea name="response" rows="3" cols="60">{"jsonrpc": "2.0", "result": true, "id": 1}</textarea>
-			<input class="button" type='submit' value='Send' />
-		</form>
-		<h2>WebSocket message received:
-	 		<form action="javascript:clear()">
-				<input class="button" type='submit' value='Clear' />
-			</form>
-		</h2>
-		
-		<div id='ws'></div>
- 	</section>	
- 	
-	<script type="text/javascript">
-		$(window).load(function() {
-			
-		var clientid;
-		//get url params
-		var urlParams = {};
-			(function () {
-			    var match,
-			        pl     = /\+/g,  // Regex for replacing addition symbol with a space
-			        search = /([^&=]+)=?([^&]*)/g,
-			        decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
-			        query  = window.location.search.substring(1);
-			
-			    while (match = search.exec(query))
-			       urlParams[decode(match[1])] = decode(match[2]);
-			})();
-			
-		if ((urlParams['clientid'] != undefined) && (urlParams['clientid'] != "")) {
-			clientid = urlParams['clientid']
-			console.log('Got client id from url params: ' + clientid);
-		} else {
-			clientid = 'client1'
-			console.log('No device in the params, setting it to: ' + clientid);
-		}
-		
-		$("textarea[name='clientid']").val(clientid)
-		
-		/* SSEs no need for that....
-	   	var source = new EventSource('http://localhost:8081/messages?deviceid=' + deviceid);
-		source.onopen = function () {
-			$("#connectionStatus").text(deviceid + ' Connected!');
-		  	console.log('Connected!');
-		};
-		
-		source.onerror = function () {
-		  $("#connectionStatus").text('Disconnected!');
-		  console.log('Disconnected!');
-		};
-		
-		source.addEventListener('global', globalMessage, false);
-		source.addEventListener('targeted', targetedMessage, false);
-			
-		source.onmessage = function (event) {
-		// a message without a type was fired
-			console.log(event.data);
-		};
-		*/
+    <section id="client">
+        <h1>WebSocket:</h1>
+        <p>Connection status: <span id="connectionStatus">Disconnected</span></p>       
+        <br>
+        <form action="javascript:sendWs()">
+            <textarea name="response" rows="3" cols="60">{"jsonrpc": "2.0", "result": true, "id": 1}</textarea>
+            <input class="button" type='submit' value='Send' />
+        </form>
+        <h2>WebSocket message received:
+            <form action="javascript:clear()">
+                <input class="button" type='submit' value='Clear' />
+            </form>
+        </h2>
+        
+        <div id='ws'></div>
+    </section>  
+    
+    <script type="text/javascript">
+        var clientid;
+        var rpcurl;
+        var rpcparam;
+        var wsurl;
+        var wsparam;
+        var ws;
 
-		ws = new WebSocket("ws://localhost:5000/?clientId=" + clientid);
-		ws.onopen = function() { 
-			console.log("ws opened!");
-			$("#connectionStatus").text('Connected!'); 
-		}
-		ws.onerror = function() { 
-			console.log("Error when connected to WebSocket");
-			$("#connectionStatus").text('Error/Disconnected!'); 
-		}
-		ws.onmessage = function(event) { 
-			console.log('Received from websocket: ' + event.data);
-			$("#ws").text(event.data); 
-		}
-	});
-		
-	
-	function sendWs(){
-		var wsmsg = $("textarea[name='response']").val();
-		console.log('WebSocket Sending: ' + wsmsg);
-		ws.send(wsmsg);
-	}
+        $(window).load(function() {
+            
+        //get url params
+        var urlParams = {};
+            (function () {
+                var match,
+                    pl     = /\+/g,  // Regex for replacing addition symbol with a space
+                    search = /([^&=]+)=?([^&]*)/g,
+                    decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+                    query  = window.location.search.substring(1);
+            
+                while (match = search.exec(query))
+                   urlParams[decode(match[1])] = decode(match[2]);
+            })();
+            
+        if ((urlParams['clientid'] != undefined) && (urlParams['clientid'] != "")) {
+            clientid = urlParams['clientid'];
+            console.log('Got client id from url params: ' + clientid);
+        } else {
+            clientid = 'client1'
+            console.log('No device in the params, setting it to: ' + clientid);
+        }
 
-	function clear(){
-		$('#ajax').text("");
-		$('#ws').text("");
-	}
-	
-	function reconnect(){
-		//var source = new EventSource('http://localhost:8081/messages?deviceid=' + $("#sent textarea[name='deviceid']").val());
-		window.location = "/?clientid=" +  $("#sent textarea[name='clientid']").val();
-	}
-	
-	function postMessage() {
-		if ($("#sent textarea[name='clientid']").val() == ""){
-			$.ajax({
-			  url:'http://localhost:5000/ajax',
-			  type:"POST",
-			  data:$("#sent textarea[name='message']").val(),
-			  contentType:'text/plain',
-			  dataType:'text',
-			  complete: function(xhr, status){
-			    console.log('Ajax message ' + status);
-			    $("#ajax").text(xhr.responseText);
-			  }
-			})
-		} else {
-			$.ajax({
-			  url:'http://localhost:5000/' + $("#sent textarea[name='clientid']").val() + '/ajax?' + $("#sent textarea[name='request']").val(),
-			  type:"GET",
-			  complete: function(xhr, status){
-			    console.log('Ajax message ' + status);
-			    $("#ajax").text(xhr.responseText);
-			  }
-			})				
-		}
-	};
-  	</script>
+        if ((urlParams['wsurl'] != undefined) && (urlParams['wsurl'] != "")) {
+            wsurl = urlParams['wsurl'];
+            console.log('Got wsurl from url params: ' + wsurl);
+        } else {
+            wsurl = 'ws://' + location.host;
+            console.log('No wsurl provided in url params, creating one');
+        }
+
+        if ((urlParams['rpcurl'] != undefined) && (urlParams['rpcurl'] != "")) {
+            rpcurl = urlParams['rpcurl'];
+            console.log('Got rpcurl from url params: ' + wsurl);
+        } else {
+            rpcurl = 'http://' + location.host;
+            console.log('No rpcurl provided in url params, creating one');
+        }       
+
+
+        $("textarea[name='clientid']").val(clientid)
+        $("textarea[name='rpcurl']").val(rpcurl)
+        $("textarea[name='wsurl']").val(wsurl)
+        
+        reconnectWs();
+
+        /* SSEs no need for that....
+        var source = new EventSource('http://localhost:8081/messages?deviceid=' + deviceid);
+        source.onopen = function () {
+            $("#connectionStatus").text(deviceid + ' Connected!');
+            console.log('Connected!');
+        };
+        
+        source.onerror = function () {
+          $("#connectionStatus").text('Disconnected!');
+          console.log('Disconnected!');
+        };
+        
+        source.addEventListener('global', globalMessage, false);
+        source.addEventListener('targeted', targetedMessage, false);
+            
+        source.onmessage = function (event) {
+        // a message without a type was fired
+            console.log(event.data);
+        };
+        */
+
+
+    });
+        
+    
+    function sendWs(){
+        var wsmsg = $("textarea[name='response']").val();
+        console.log('WebSocket Sending: ' + wsmsg);
+        ws.send(wsmsg);
+    }
+
+    function reconnectWs(){
+        try {
+            ws.close()
+        } catch (e){
+            /* .. */
+        }
+
+        ws = new WebSocket("ws://localhost:5000/?clientId=" + clientid);
+        ws.onopen = function() { 
+            console.log("ws opened!");
+            $("#connectionStatus").text('Connected!'); 
+        }
+        ws.onerror = function() { 
+            console.log("Error when connected to WebSocket");
+            $("#connectionStatus").text('Error/Disconnected!'); 
+        }
+        ws.onmessage = function(event) { 
+            console.log('Received from websocket: ' + event.data);
+            $("#ws").text(event.data); 
+        }
+    }
+
+    function clear(){
+        $('#ajax').text("");
+        $('#ws').text("");
+    }
+    
+    function reconnect(){
+        //var source = new EventSource('http://localhost:8081/messages?deviceid=' + $("#sent textarea[name='deviceid']").val());
+        window.location = "/?clientid=" +  $("textarea[name='clientid']").val() + 
+                        "&rpcurl="+ rpcurl + 
+                        "&wsurl=" + wsurl;
+    }
+    
+    function postMessage() {
+        $.ajax({
+          url:'http://localhost:5000/' + $("textarea[name='clientid']").val() + '/ajax?' + $("#sent textarea[name='request']").val(),
+          type:"GET",
+          complete: function(xhr, status){
+            console.log('Ajax message ' + status);
+            $("#ajax").text(xhr.responseText);
+          }
+        });
+    };
+    </script>
  
   </body>
 </html>
