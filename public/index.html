@@ -107,9 +107,9 @@
         }       
 
 
-        $("textarea[name='clientid']").val(clientid)
-        $("textarea[name='rpcurl']").val(rpcurl)
-        $("textarea[name='wsurl']").val(wsurl)
+        $("textarea[name='clientid']").val(clientid);
+        $("textarea[name='rpcurl']").val(rpcurl);
+        $("textarea[name='wsurl']").val(wsurl);
         
         reconnectWs();
 
@@ -145,19 +145,24 @@
     }
 
     function reconnectWs(){
+        clientid = $("textarea[name='clientid']").val();
+        rpcurl = $("textarea[name='rpcurl']").val();
+        wsurl = $("textarea[name='wsurl']").val();
+
         try {
             ws.close()
         } catch (e){
             /* .. */
         }
 
-        ws = new WebSocket("ws://localhost:5000/?clientId=" + clientid);
+        ws = new WebSocket(wsurl + "?clientId=" + clientid);
         ws.onopen = function() { 
             console.log("ws opened!");
             $("#connectionStatus").text('Connected!'); 
         }
-        ws.onerror = function() { 
-            console.log("Error when connected to WebSocket");
+        ws.onerror = function(e) { 
+            console.log("Error when connecting to WebSocket");
+            console.log(e);
             $("#connectionStatus").text('Error/Disconnected!'); 
         }
         ws.onmessage = function(event) { 
