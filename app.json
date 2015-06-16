@@ -1,0 +1,7 @@
+{
+  "name": "RPC2WS",
+  "description": "A Node.js AJAX RPC to WebSockets proxy",
+  "repository": "https://github.com/wouterlucas/RPC2WS",
+  "logo": "",
+  "keywords": ["node", "express", "redis", "hiredis", "WebSockets"]
+}

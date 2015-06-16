@@ -1,0 +1,30 @@
+{
+  "name": "RPC2WS",
+  "version": "0.1.0",
+  "description": "AJAX RPC to WebSockets proxy",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "~4.9.x",
+    "hiredis": "~0.4.x",
+    "redis": "~0.12.x",
+    "websocket": "~1.0.x"
+  },
+  "engines": {
+    "node": "0.12.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wouterlucas/RPC2WS"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "express",
+    "websockets",
+    "json-rpc"
+  ],
+  "license": "MIT"
+}
